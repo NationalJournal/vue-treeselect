@@ -40,13 +40,13 @@
       gtag('config', 'UA-108169693-1');
     </script>
     <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600|Dosis:300,500">
-  <link href="/static/css/app.4e84dc7e03246b3e28ab.css" rel="stylesheet"></head>
+  <link href="/static/css/app.497a05cccd043a56fb1a.css" rel="stylesheet"></head>
   <body>
     <div id="app">
       <header class="site-header">
         <div class="container" id="header">
           <div class="site-header-logo"><a class="site-header-logo-link" href="https://vue-treeselect.js.org/">Vue<span class="site-header-logo-component-name">Treeselect</span></a></div>
-          <nav class="site-header-nav"><a class="site-header-nav-item" href="https://github.com/riophae/vue-treeselect/releases">v0.4.0</a><span class="site-header-nav-item"><a class="github-button" href="https://github.com/riophae/vue-treeselect" data-show-count="true" aria-label="Star riophae/vue-treeselect on GitHub">Star</a></span></nav>
+          <nav class="site-header-nav"><a class="site-header-nav-item" href="https://github.com/nationaljournal/vue-treeselect/releases">v0.5.0</a><span class="site-header-nav-item"><a class="github-button" href="https://github.com/nationaljournal/vue-treeselect" data-show-count="true" aria-label="Star nationaljournal/vue-treeselect on GitHub">Star</a></span></nav>
         </div>
       </header>
       <div class="container">
@@ -97,7 +97,7 @@
             <h1 id="introduction">Introduction<a class="anchor" href="#introduction">
                 <anchor></anchor></a>
             </h1>
-            <section><p><a href="https://github.com/riophae/vue-treeselect">vue-treeselect</a> is a multi-select component with nested options support for <a href="https://www.vuejs.org">Vue.js</a>.</p>
+            <section><p><a href="https://github.com/nationaljournal/vue-treeselect">vue-treeselect</a> is a multi-select component with nested options support for <a href="https://www.vuejs.org">Vue.js</a>.</p>
 <ul>
 <li>Single &amp; multiple select with nested options support</li>
 <li>Fuzzy matching</li>
@@ -105,7 +105,7 @@
 <li>Delayed loading (load data of deep level options only when needed)</li>
 <li>Keyboard support (navigate using <kbd>Arrow Up</kbd> &amp; <kbd>Arrow Down</kbd> keys, select option using <kbd>Enter</kbd> key, etc.)</li>
 <li>Rich options &amp; highly customizable</li>
-<li>Supports <a href="https://github.com/riophae/vue-treeselect#browser-compatibility">a wide range of browsers</a></li>
+<li>Supports <a href="https://github.com/nationaljournal/vue-treeselect#browser-compatibility">a wide range of browsers</a></li>
 </ul>
 <p><em>Requires Vue 2.2+</em></p>
 
@@ -115,7 +115,7 @@
             </h1>
             <section>
               <p>It's recommended to install vue-treeselect via npm, and build your app using a bundler like <a href="https://webpack.js.org/">webpack</a>.</p>
-<pre><code class="language-bash">npm install --save @riophae/vue-treeselect
+<pre><code class="language-bash">npm install --save @nationaljournal/vue-treeselect
 </code></pre>
               <p>This example shows how to integrate vue-treeselect with your <a href="https://vuejs.org/v2/guide/single-file-components.html">Vue SFCs</a>.</p>
 <pre><code class="language-vue">&lt;!-- Vue SFC --&gt;
@@ -127,9 +127,9 @@
 
 &lt;script&gt;
   // import the component
-  import Treeselect from '@riophae/vue-treeselect'
+  import TreeSelect from '@nationaljournal/vue-treeselect'
   // import the styles
-  import '@riophae/vue-treeselect/dist/vue-treeselect.css'
+  import '@nationaljournal/vue-treeselect/dist/vue-treeselect.css'
 
   export default {
     // register the component
@@ -167,8 +167,8 @@
     &lt;!-- include Vue 2.x --&gt;
     &lt;script src=&quot;https://cdn.jsdelivr.net/npm/vue@^2&quot;&gt;&lt;/script&gt;
     &lt;!-- include vue-treeselect &amp; its styles. you can change the version tag to better suit your needs. --&gt;
-    &lt;script src=&quot;https://cdn.jsdelivr.net/npm/@riophae/vue-treeselect@^0.4.0/dist/vue-treeselect.umd.min.js&quot;&gt;&lt;/script&gt;
-    &lt;link rel=&quot;stylesheet&quot; href=&quot;https://cdn.jsdelivr.net/npm/@riophae/vue-treeselect@^0.4.0/dist/vue-treeselect.min.css&quot;&gt;
+    &lt;script src=&quot;https://cdn.jsdelivr.net/npm/@nationaljournal/vue-treeselect@^0.5.0/dist/vue-treeselect.umd.min.js&quot;&gt;&lt;/script&gt;
+    &lt;link rel=&quot;stylesheet&quot; href=&quot;https://cdn.jsdelivr.net/npm/@nationaljournal/vue-treeselect@^0.5.0/dist/vue-treeselect.min.css&quot;&gt;
   &lt;/head&gt;
   &lt;body&gt;
     &lt;div id=&quot;app&quot;&gt;
@@ -313,13 +313,17 @@
       :disabled=&quot;disabled&quot;
       :open-on-click=&quot;openOnClick&quot;
       :open-on-focus=&quot;openOnFocus&quot;
+      :exclusive=&quot;exclusive&quot;
       :clear-on-select=&quot;clearOnSelect&quot;
       :close-on-select=&quot;closeOnSelect&quot;
       :always-open=&quot;alwaysOpen&quot;
+      :show-count=&quot;showCount&quot;
+      :show-selected-children-count=&quot;showSelectedChildrenCount&quot;
       :append-to-body=&quot;appendToBody&quot;
       :options=&quot;options&quot;
       :limit=&quot;3&quot;
       :max-height=&quot;200&quot;
+      :value-consists-of=&quot;valueConsistsOf&quot;
       v-model=&quot;value&quot;
       /&gt;
   &lt;/div&gt;
@@ -333,6 +337,11 @@
   &lt;p&gt;
     &lt;label&gt;&lt;input type=&quot;checkbox&quot; v-model=&quot;openOnClick&quot;&gt;Open on click&lt;/label&gt;
     &lt;label&gt;&lt;input type=&quot;checkbox&quot; v-model=&quot;openOnFocus&quot;&gt;Open on focus&lt;/label&gt;
+    &lt;label&gt;&lt;input type=&quot;checkbox&quot; v-model=&quot;exclusive&quot;&gt;Exclusive&lt;/label&gt;
+  &lt;/p&gt;
+  &lt;p&gt;
+    &lt;label&gt;&lt;input type=&quot;checkbox&quot; v-model=&quot;showCount&quot;&gt;Show children count&lt;/label&gt;
+    &lt;label&gt;&lt;input type=&quot;checkbox&quot; v-model=&quot;showSelectedChildrenCount&quot;&gt;Show selected children count&lt;/label&gt;
   &lt;/p&gt;
   &lt;p&gt;
     &lt;label&gt;&lt;input type=&quot;checkbox&quot; v-model=&quot;clearOnSelect&quot;&gt;Clear on select&lt;/label&gt;
@@ -342,6 +351,10 @@
     &lt;label&gt;&lt;input type=&quot;checkbox&quot; v-model=&quot;alwaysOpen&quot;&gt;Always open&lt;/label&gt;
     &lt;label&gt;&lt;input type=&quot;checkbox&quot; v-model=&quot;appendToBody&quot;&gt;Append to body&lt;/label&gt;
     &lt;label&gt;&lt;input type=&quot;checkbox&quot; v-model=&quot;rtl&quot;&gt;RTL mode&lt;/label&gt;
+  &lt;/p&gt;
+  &lt;p&gt;&lt;strong&gt;Value consists of:&lt;/strong&gt;&lt;/p&gt;
+  &lt;p class=&quot;options&quot;&gt;
+    &lt;label&gt;&lt;input type=&quot;radio&quot; value=&quot;ALL&quot; v-model=&quot;valueConsistsOf&quot;&gt;All&lt;/label&gt;&lt;br&gt;
   &lt;/p&gt;
 &lt;/div&gt;
 </code></template>
@@ -355,12 +368,16 @@ export default {
     disabled: false,
     openOnClick: true,
     openOnFocus: false,
+    exclusive: false,
+    showCount: false,
+    showSelectedChildrenCount: false,
     clearOnSelect: true,
     closeOnSelect: false,
     alwaysOpen: false,
     appendToBody: false,
+    valueConsistsOf: 'ALL',
     rtl: false,
-    value: [ 'a' ],
+    value: [],
     options: generateOptions(2, 3),
   }),
 
@@ -397,7 +414,7 @@ export default {
   v-model=&quot;value&quot;
   /&gt;
 </code></template>
-                <template slot="javascript"><code v-pre>import { LOAD_CHILDREN_OPTIONS } from '@riophae/vue-treeselect'
+                <template slot="javascript"><code v-pre>import { LOAD_CHILDREN_OPTIONS } from '@nationaljournal/vue-treeselect'
 
 // We just use `setTimeout()` here to simulate an async operation
 // instead of requesting a real API server for demo purpose.
@@ -474,7 +491,7 @@ export default {
   placeholder=&quot;Open the menu...&quot;
   /&gt;
 </code></template>
-                <template slot="javascript"><code v-pre>import { LOAD_ROOT_OPTIONS } from '@riophae/vue-treeselect'
+                <template slot="javascript"><code v-pre>import { LOAD_ROOT_OPTIONS } from '@nationaljournal/vue-treeselect'
 
 const sleep = d =&gt; new Promise(r =&gt; setTimeout(r, d))
 let called = false
@@ -521,7 +538,7 @@ export default {
   :load-options=&quot;loadOptions&quot;
   /&gt;
 </code></template>
-                <template slot="javascript"><code v-pre>import { ASYNC_SEARCH } from '@riophae/vue-treeselect'
+                <template slot="javascript"><code v-pre>import { ASYNC_SEARCH } from '@nationaljournal/vue-treeselect'
 
 const simulateAsyncOperation = fn =&gt; {
   setTimeout(fn, 2000)
@@ -1039,9 +1056,9 @@ export default {
         </section>
       </div>
       <footer class="site-footer">
-        <div class="container">Copyright &copy; 2017-2019 <a href="https://github.com/riophae">Riophae Lee</a>. MIT Licensed.</div>
+        <div class="container">Copyright &copy; 2020-2020 <a href="https://github.com/nationaljournal">National Journal</a>. MIT Licensed.</div>
       </footer>
     </div>
     <script src="https://buttons.github.io/buttons.js" async defer="defer"></script>
-  <script type="text/javascript" src="//cdn.jsdelivr.net/npm/vue@2.6.10/dist/vue.min.js"></script><script type="text/javascript" src="/static/js/app.a2895e2d276a397c24c9.js"></script></body>
+  <script type="text/javascript" src="//cdn.jsdelivr.net/npm/vue@2.6.12/dist/vue.min.js"></script><script type="text/javascript" src="/static/js/app.4203d591451c864fa76f.js"></script></body>
 </html>
