@@ -104,6 +104,14 @@ export default {
     },
 
     /**
+     * Set the value for aria-label.
+     */
+    ariaLabel: {
+      type: String,
+      default: 'tree-select',
+    },
+
+    /**
      * Whether to enable async search mode.
      */
     async: {

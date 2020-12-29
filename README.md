@@ -7,6 +7,10 @@
 
 ![Vue-Treeselect Screenshot](https://raw.githubusercontent.com/nationaljournal/vue-treeselect/master/screenshot.png)
 
+### Differences from `riophae/vue-treeselect`
+
+- Added `aria-label` prop to input.
+
 ### Features
 
 - Single & multiple select with nested options support
