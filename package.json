@@ -1,11 +1,14 @@
 {
-  "name": "@riophae/vue-treeselect",
-  "version": "0.4.0",
+  "name": "@nationaljournal/vue-treeselect",
+  "version": "0.5.0",
   "description": "A multi-select component with nested options support for Vue.js",
-  "author": "Riophae Lee <riophaelee@gmail.com>",
+  "author": "Hasan Tuncay <htuncay@nationaljournal.com>",
   "license": "MIT",
-  "homepage": "https://vue-treeselect.js.org/",
-  "repository": "riophae/vue-treeselect",
+  "homepage": "https://github.com/NationalJournal/vue-treeselect",
+  "bugs": {
+    "url": "https://github.com/NationalJournal/vue-treeselect/issues"
+  },
+  "repository": "nationaljournal/vue-treeselect",
   "main": "dist/vue-treeselect.cjs.js",
   "unpkg": "dist/vue-treeselect.umd.min.js",
   "css": "dist/vue-treeselect.min.css",
@@ -28,6 +31,7 @@
     "lint:css": "stylelint '**/*.less'",
     "lint": "npm run lint:js && npm run lint:css",
     "verify-builds": "size-limit && node build/verify-builds.js",
+    "postinstall": "cd ./node_modules/@nationaljournal/vue-treeselect && npm install && npm run finish",
     "finish": "npm test && npm run build-library && npm run verify-builds"
   },
   "pre-commit": "lint",
