@@ -15,6 +15,7 @@ import {
   ALL, BRANCH_PRIORITY, LEAF_PRIORITY, ALL_WITH_INDETERMINATE,
   ALL_CHILDREN, ALL_DESCENDANTS, LEAF_CHILDREN, LEAF_DESCENDANTS,
   ORDER_SELECTED, LEVEL, INDEX,
+  ALL_CHILDREN_SELECTED,
 } from '../constants'
 
 function sortValueByIndex(a, b) {
@@ -101,6 +102,14 @@ export default {
     appendToBody: {
       type: Boolean,
       default: false,
+    },
+
+    /**
+     * Set the value for aria-label.
+     */
+    ariaLabel: {
+      type: String,
+      default: 'tree-select',
     },
 
     /**
@@ -268,6 +277,14 @@ export default {
     delimiter: {
       type: String,
       default: ',',
+    },
+
+    /**
+     * Only expand one branch at a time.
+     */
+    exclusive: {
+      type: Boolean,
+      default: false,
     },
 
     /**
@@ -536,6 +553,7 @@ export default {
 
     /**
      * Whether to show a children count next to the label of each branch node.
+     * @type {Boolean}
      */
     showCount: {
       type: Boolean,
@@ -546,6 +564,7 @@ export default {
      * Used in conjunction with `showCount` to specify which type of count number should be displayed.
      * Acceptable values:
      *   - "ALL_CHILDREN"
+     *   - "ALL_CHILDREN_SELECTED"
      *   - "ALL_DESCENDANTS"
      *   - "LEAF_CHILDREN"
      *   - "LEAF_DESCENDANTS"
@@ -554,7 +573,7 @@ export default {
       type: String,
       default: ALL_CHILDREN,
       validator(value) {
-        const acceptableValues = [ ALL_CHILDREN, ALL_DESCENDANTS, LEAF_CHILDREN, LEAF_DESCENDANTS ]
+        const acceptableValues = [ ALL_CHILDREN, ALL_CHILDREN_SELECTED, ALL_DESCENDANTS, LEAF_CHILDREN, LEAF_DESCENDANTS ]
         return includes(acceptableValues, value)
       },
     },
@@ -565,6 +584,14 @@ export default {
      * @type {boolean}
      */
     showCountOnSearch: null,
+
+    /**
+     * Whether to show selected children count (if any exists) next to the label of each branch node.
+     */
+    showSelectedChildrenCount: {
+      type: Boolean,
+      default: false,
+    },
 
     /**
      * In which order the selected options should be displayed in trigger & sorted in `value` array.
@@ -929,7 +956,7 @@ export default {
         const prevNodeMap = this.forest.nodeMap
         this.forest.nodeMap = createMap()
         this.keepDataOfSelectedNodes(prevNodeMap)
-        this.forest.normalizedOptions = this.normalize(NO_PARENT_NODE, options, prevNodeMap)
+        this.forest.normalizedOptions = this.normalize(NO_PARENT_NODE, options, prevNodeMap, this.forest.selectedNodeIds)
         // Cases that need fixing `selectedNodeIds`:
         //   1) Children options of a checked node have been delayed loaded,
         //      we should also mark these children as checked. (multi-select mode)
@@ -1215,6 +1242,7 @@ export default {
           node.hasMatchedDescendants = false
           this.$set(this.localSearch.countMap, node.id, {
             [ALL_CHILDREN]: 0,
+            [ALL_CHILDREN_SELECTED]: 0,
             [ALL_DESCENDANTS]: 0,
             [LEAF_CHILDREN]: 0,
             [LEAF_DESCENDANTS]: 0,
@@ -1465,6 +1493,17 @@ export default {
     },
 
     toggleExpanded(node) {
+      if (this.exclusive && node.isExpanded === false) {
+        Object.keys(this.forest.nodeMap).forEach(key => {
+          this.forest.nodeMap[key].isExpanded = false
+        })
+        node.isExpanded = true
+        if (!node.childrenStates.isLoaded) {
+          this.loadChildrenOptions(node)
+        }
+        return
+      }
+
       let nextState
 
       if (this.localSearch.active) {
@@ -1490,6 +1529,9 @@ export default {
       if (this.multiple) {
         this.traverseAllNodesByIndex(node => {
           checkedStateMap[node.id] = UNCHECKED
+          if (node.count != null) {
+            node.count.ALL_CHILDREN_SELECTED = 0
+          }
         })
 
         this.selectedNodes.forEach(selectedNode => {
@@ -1497,6 +1539,7 @@ export default {
 
           if (!this.flat && !this.disableBranchNodes) {
             selectedNode.ancestors.forEach(ancestorNode => {
+              ancestorNode.count.ALL_CHILDREN_SELECTED++
               if (!this.isSelected(ancestorNode)) {
                 checkedStateMap[ancestorNode.id] = INDETERMINATE
               }
@@ -1514,8 +1557,8 @@ export default {
       }
     },
 
-    normalize(parentNode, nodes, prevNodeMap) {
-      let normalizedOptions = nodes
+    normalize(parentNode, options, prevNodeMap, selectedNodeIds) {
+      let normalizedOptions = options
         .map(node => [ this.enhancedNormalizer(node), node ])
         .map(([ node, raw ], index) => {
           this.checkDuplication(node)
@@ -1527,6 +1570,7 @@ export default {
           const isBranch = Array.isArray(children) || children === null
           const isLeaf = !isBranch
           const isDisabled = !!node.isDisabled || (!this.flat && !isRootNode && parentNode.isDisabled)
+          const isSelected = selectedNodeIds != null && selectedNodeIds.filter(selectedId => (selectedId === id)).length > 0
           const isNew = !!node.isNew
           const lowerCased = this.matchKeys.reduce((prev, key) => ({
             ...prev,
@@ -1552,6 +1596,7 @@ export default {
           this.$set(normalized, 'isBranch', isBranch)
           this.$set(normalized, 'isLeaf', isLeaf)
           this.$set(normalized, 'isRootNode', isRootNode)
+          this.$set(normalized, 'isSelected', isSelected)
           this.$set(normalized, 'raw', raw)
 
           if (isBranch) {
@@ -1570,12 +1615,13 @@ export default {
             this.$set(normalized, 'showAllChildrenOnSearch', false)
             this.$set(normalized, 'count', {
               [ALL_CHILDREN]: 0,
+              [ALL_CHILDREN_SELECTED]: 0,
               [ALL_DESCENDANTS]: 0,
               [LEAF_CHILDREN]: 0,
               [LEAF_DESCENDANTS]: 0,
             })
             this.$set(normalized, 'children', isLoaded
-              ? this.normalize(normalized, children, prevNodeMap)
+              ? this.normalize(normalized, children, prevNodeMap, selectedNodeIds)
               : [])
 
             if (isDefaultExpanded === true) normalized.ancestors.forEach(ancestor => {
@@ -1841,13 +1887,17 @@ export default {
             this.addValue(descendant)
           }
         })
+
+        node.isExpanded = false
       }
 
       if (isFullyChecked) {
         let curr = node
         while ((curr = curr.parentNode) !== NO_PARENT_NODE) {
-          if (curr.children.every(this.isSelected)) this.addValue(curr)
-          else break
+          if (curr.children.every(this.isSelected)) {
+            curr.isExpanded = false
+            this.addValue(curr)
+          } else break
         }
       }
     },

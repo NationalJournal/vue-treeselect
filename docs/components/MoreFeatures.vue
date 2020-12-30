@@ -9,6 +9,9 @@
         :disabled="disabled"
         :open-on-click="openOnClick"
         :open-on-focus="openOnFocus"
+        :exclusive="exclusive"
+        :show-count="showCount"
+        :show-selected-children-count="showSelectedChildrenCount"
         :clear-on-select="clearOnSelect"
         :close-on-select="closeOnSelect"
         :always-open="alwaysOpen"
@@ -16,6 +19,7 @@
         :options="options"
         :limit="3"
         :max-height="200"
+        :value-consists-of="valueConsistsOf"
         v-model="value"
         />
     </div>
@@ -29,6 +33,11 @@
     <p>
       <label><input type="checkbox" v-model="openOnClick">Open on click</label>
       <label><input type="checkbox" v-model="openOnFocus">Open on focus</label>
+      <label><input type="checkbox" v-model="exclusive">Exclusive</label>
+    </p>
+    <p>
+      <label><input type="checkbox" v-model="showCount">Show children count</label>
+      <label><input type="checkbox" v-model="showSelectedChildrenCount">Show selected children count</label>
     </p>
     <p>
       <label><input type="checkbox" v-model="clearOnSelect">Clear on select</label>
@@ -38,6 +47,10 @@
       <label><input type="checkbox" v-model="alwaysOpen">Always open</label>
       <label><input type="checkbox" v-model="appendToBody">Append to body</label>
       <label><input type="checkbox" v-model="rtl">RTL mode</label>
+    </p>
+    <p><strong>Value consists of:</strong></p>
+    <p class="options">
+      <label><input type="radio" value="ALL" v-model="valueConsistsOf">All</label><br>
     </p>
   </div>
 </template>
@@ -53,12 +66,16 @@
       disabled: false,
       openOnClick: true,
       openOnFocus: false,
+      exclusive: false,
+      showCount: false,
+      showSelectedChildrenCount: false,
       clearOnSelect: true,
       closeOnSelect: false,
       alwaysOpen: false,
       appendToBody: false,
+      valueConsistsOf: 'ALL',
       rtl: false,
-      value: [ 'a' ],
+      value: [],
       options: generateOptions(2, 3),
     }),
 

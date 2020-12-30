@@ -11,6 +11,8 @@ import {
   findMenuContainer,
   findOptionByNodeId,
   findLabelContainerByNodeId,
+  openMenu,
+  setProps,
 } from './shared'
 import Treeselect from '@src/components/Treeselect'
 import Option from '@src/components/Option'
@@ -319,12 +321,10 @@ describe('Props', () => {
           options: [],
         },
       })
-      const { vm } = wrapper
 
-      vm.openMenu()
-      await vm.$nextTick()
+      await openMenu(wrapper.vm)
 
-      const portalTarget = findPortalTarget(vm)
+      const portalTarget = findPortalTarget(wrapper.vm)
       expect(portalTarget.classList).toContain('vue-treeselect')
       expect(portalTarget.firstElementChild.classList).toContain('vue-treeselect__menu-container')
     })
@@ -340,8 +340,7 @@ describe('Props', () => {
       })
       const { vm } = wrapper
 
-      vm.openMenu()
-      await vm.$nextTick()
+      await openMenu(vm)
 
       expect(findPortalTarget(vm)).toBeTruthy()
 
@@ -388,8 +387,7 @@ describe('Props', () => {
       })
       const { vm } = wrapper
 
-      vm.openMenu()
-      await vm.$nextTick()
+      await openMenu(vm)
 
       const portalTarget = findPortalTarget(vm)
       const label = $('.vue-treeselect__label', portalTarget)
@@ -412,10 +410,8 @@ describe('Props', () => {
         },
         attachToDocument: true,
       })
-      const { vm } = wrapper
 
-      vm.openMenu()
-      await vm.$nextTick()
+      await openMenu(wrapper.vm)
 
       const menuContainer = findMenuContainer(wrapper)
       expect(menuContainer.element.style.zIndex).toBe('1')
@@ -431,12 +427,10 @@ describe('Props', () => {
         },
         attachToDocument: true,
       })
-      const { vm } = wrapper
 
-      vm.openMenu()
-      await vm.$nextTick()
+      await openMenu(wrapper.vm)
 
-      const portalTarget = findPortalTarget(vm)
+      const portalTarget = findPortalTarget(wrapper.vm)
       expect(portalTarget.style.zIndex).toBe('1')
 
       const $menuContainer = $('.vue-treeselect__menu-container', portalTarget)
@@ -966,8 +960,7 @@ describe('Props', () => {
       })
       const { vm } = wrapper
 
-      vm.openMenu()
-      await vm.$nextTick()
+      await openMenu(vm)
 
       const labelContainer = findLabelContainerByNodeId(wrapper, 'a')
 
@@ -988,8 +981,7 @@ describe('Props', () => {
       })
       const { vm } = wrapper
 
-      vm.openMenu()
-      await vm.$nextTick()
+      await openMenu(vm)
 
       const labelContainer = findLabelContainerByNodeId(wrapper, 'a')
 
@@ -1154,22 +1146,20 @@ describe('Props', () => {
       vm = wrapper.vm
     })
 
-    const getLabelContainerOfBranchNode = async () => {
-      vm.openMenu() // ensure the menu is opened otherwise the options won't be displayed
-      await vm.$nextTick()
+    const getLabelContainerOfBranchNode = async (nodeId = 'branch') => {
+      await openMenu(vm) // ensure the menu is opened otherwise the options won't be displayed
 
-      return findLabelContainerByNodeId(wrapper, 'branch')
+      return findLabelContainerByNodeId(wrapper, nodeId)
     }
 
-    const getLabelContainerOfLeafNode = async () => {
-      vm.openMenu() // ensure the menu is opened otherwise the options won't be displayed
-      await vm.$nextTick()
+    const getLabelContainerOfLeafNode = async (nodeId = 'leaf') => {
+      await openMenu(vm) // ensure the menu is opened otherwise the options won't be displayed
 
-      return findLabelContainerByNodeId(wrapper, 'leaf')
+      return findLabelContainerByNodeId(wrapper, nodeId)
     }
 
-    const clickOnLabelOfBranchNode = async () => {
-      const labelContainerOfBranchNode = await getLabelContainerOfBranchNode()
+    const clickOnLabelOfBranchNode = async (nodeId = 'branch') => {
+      const labelContainerOfBranchNode = await getLabelContainerOfBranchNode(nodeId)
       leftClick(labelContainerOfBranchNode)
     }
 
@@ -1205,17 +1195,21 @@ describe('Props', () => {
       })
 
       it('click on label of a branch node should not toggle expanding state when multiple=true', async () => {
-        wrapper.setProps({ multiple: true })
+        await setProps(wrapper, { multiple: true })
 
+        expect(vm.isSelected(vm.forest.nodeMap.branch)).toBe(false)
         expect(vm.forest.nodeMap.branch.isExpanded).toBe(true)
         await clickOnLabelOfBranchNode()
-        expect(vm.forest.nodeMap.branch.isExpanded).toBe(true)
+        expect(vm.isSelected(vm.forest.nodeMap.branch)).toBe(true)
+        expect(vm.forest.nodeMap.branch.isExpanded).toBe(false)
+        await clickOnLabelOfBranchNode()
+        expect(vm.isSelected(vm.forest.nodeMap.branch)).toBe(false)
+        expect(vm.forest.nodeMap.branch.isExpanded).toBe(false)
       })
 
       it('click on label of a branch node should close the dropdown when multiple=false & closeOnSelect=true', async () => {
         wrapper.setProps({ multiple: false, closeOnSelect: true })
-        vm.openMenu()
-        await vm.$nextTick()
+        await openMenu(vm)
 
         expect(vm.menu.isOpen).toBe(true)
         await clickOnLabelOfBranchNode()
@@ -1262,8 +1256,7 @@ describe('Props', () => {
 
       it('click on label of a branch node should not close the dropdown when multiple=false & closeOnSelect=true', async () => {
         wrapper.setProps({ multiple: false, closeOnSelect: true })
-        vm.openMenu()
-        await vm.$nextTick()
+        await openMenu(vm)
 
         expect(vm.menu.isOpen).toBe(true)
         await clickOnLabelOfBranchNode()
@@ -1301,6 +1294,91 @@ describe('Props', () => {
             expect(vm.internalValue).toEqual([ 'leaf' ])
           })
         })
+      })
+    })
+  })
+
+  describe('exclusive', () => {
+    let wrapper, vm
+
+    beforeEach(() => {
+      wrapper = mount(Treeselect, {
+        sync: false,
+        propsData: {
+          flat: false,
+          options: [ {
+            id: 'branch1',
+            label: 'branch1',
+            isDefaultExpanded: true,
+            children: [ {
+              id: 'leaf1',
+              label: 'leaf1',
+            } ],
+          }, {
+            id: 'branch2',
+            label: 'branch2',
+            isDefaultExpanded: false,
+            children: [ {
+              id: 'leaf2',
+              label: 'leaf2',
+            } ],
+          } ],
+        },
+      })
+      vm = wrapper.vm
+    })
+
+    const getOptionArrowContainerByNodeId = async nodeId => {
+      await openMenu(vm) // ensure the menu is opened otherwise the options won't be displayed
+
+      return findOptionByNodeId(wrapper, nodeId).find('.vue-treeselect__option-arrow-container')
+    }
+
+    const clickOnArrowOfBranchNode = async nodeId => {
+      const labelContainerOfBranchNode = await getOptionArrowContainerByNodeId(nodeId)
+      leftClick(labelContainerOfBranchNode)
+    }
+
+    describe('when exclusive=true', () => {
+      it('should collapse other expanded branches when label is clicked', async () => {
+        await setProps(wrapper, { exclusive: true })
+
+        expect(vm.forest.nodeMap.branch1.isExpanded).toBe(true)
+        expect(vm.forest.nodeMap.branch2.isExpanded).toBe(false)
+        await clickOnArrowOfBranchNode('branch2')
+        expect(vm.forest.nodeMap.branch1.isExpanded).toBe(false)
+        expect(vm.forest.nodeMap.branch2.isExpanded).toBe(true)
+        await clickOnArrowOfBranchNode('branch1')
+        expect(vm.forest.nodeMap.branch1.isExpanded).toBe(true)
+        expect(vm.forest.nodeMap.branch2.isExpanded).toBe(false)
+      })
+    })
+
+    describe('when exclusive=false', () => {
+      it('should NOT collapse other expanded branches when label is clicked', async () => {
+        await setProps(wrapper, { exclusive: false })
+
+        expect(vm.forest.nodeMap.branch1.isExpanded).toBe(true)
+        expect(vm.forest.nodeMap.branch2.isExpanded).toBe(false)
+        await clickOnArrowOfBranchNode('branch2')
+        expect(vm.forest.nodeMap.branch1.isExpanded).toBe(true)
+        expect(vm.forest.nodeMap.branch2.isExpanded).toBe(true)
+        await clickOnArrowOfBranchNode('branch1')
+        expect(vm.forest.nodeMap.branch1.isExpanded).toBe(false)
+        expect(vm.forest.nodeMap.branch2.isExpanded).toBe(true)
+      })
+    })
+
+    describe('when exclusive is not specified', () => {
+      it('should NOT collapse other expanded branches when label is clicked', async () => {
+        expect(vm.forest.nodeMap.branch1.isExpanded).toBe(true)
+        expect(vm.forest.nodeMap.branch2.isExpanded).toBe(false)
+        await clickOnArrowOfBranchNode('branch2')
+        expect(vm.forest.nodeMap.branch1.isExpanded).toBe(true)
+        expect(vm.forest.nodeMap.branch2.isExpanded).toBe(true)
+        await clickOnArrowOfBranchNode('branch1')
+        expect(vm.forest.nodeMap.branch1.isExpanded).toBe(false)
+        expect(vm.forest.nodeMap.branch2.isExpanded).toBe(true)
       })
     })
   })
@@ -1343,8 +1421,7 @@ describe('Props', () => {
         })
         const { vm } = wrapper
 
-        vm.openMenu()
-        await vm.$nextTick()
+        await openMenu(vm)
 
         expect(wrapper.vm.menu.isOpen).toBe(true)
 
@@ -1384,17 +1461,17 @@ describe('Props', () => {
         expect(vm.trigger.isFocused).toBe(false)
       })
 
-      it('should be uanble to open the menu', () => {
+      it('should be uanble to open the menu', async () => {
         const wrapper = mount(Treeselect, {
           propsData: {
             options: [],
             disabled: true,
           },
         })
-        const { vm } = wrapper
 
-        wrapper.vm.openMenu()
-        expect(vm.menu.isOpen).toBe(false)
+        await openMenu(wrapper.vm)
+
+        expect(wrapper.vm.menu.isOpen).toBe(false)
       })
     })
   })
@@ -1798,14 +1875,14 @@ describe('Props', () => {
   })
 
   describe('options', () => {
-    it('show tip when `options` is an empty array', () => {
+    it('show tip when `options` is an empty array', async () => {
       const wrapper = mount(Treeselect, {
         propsData: {
           options: [],
         },
       })
 
-      wrapper.vm.openMenu()
+      await openMenu(wrapper.vm)
 
       const menu = wrapper.find('.vue-treeselect__menu')
       const noOptionsTip = menu.find('.vue-treeselect__no-options-tip')
@@ -2103,8 +2180,55 @@ describe('Props', () => {
     })
   })
 
-  it('showCount', () => {
-    // TODO
+  describe('showCount', () => {
+    let wrapper
+
+    beforeEach(async () => {
+      wrapper = mount(Treeselect, {
+        propsData: {
+          alwaysOpen: true,
+          options: [ {
+            id: 'a',
+            label: 'a',
+            children: [ {
+              id: 'aa',
+              label: 'aa',
+            }, {
+              id: 'ab',
+              label: 'ab',
+            } ],
+          }, {
+            id: 'b',
+            label: 'b',
+            children: [ {
+              id: 'ba',
+              label: 'ba',
+            } ],
+          } ],
+        },
+      })
+
+      await wrapper.vm.$nextTick()
+    })
+
+    it('when showCount=false', async () => {
+      await setProps(wrapper, { showCount: false })
+
+      expect(findOptionByNodeId(wrapper, 'a').find('.vue-treeselect__count').exists()).toBeFalse()
+      expect(findOptionByNodeId(wrapper, 'b').find('.vue-treeselect__count').exists()).toBeFalse()
+    })
+
+    it('when showCount not specified', () => {
+      expect(findOptionByNodeId(wrapper, 'a').find('.vue-treeselect__count').exists()).toBeFalse()
+      expect(findOptionByNodeId(wrapper, 'b').find('.vue-treeselect__count').exists()).toBeFalse()
+    })
+
+    it('when showCount=true', async () => {
+      await setProps(wrapper, { showCount: true })
+
+      expect(findOptionByNodeId(wrapper, 'a').find('.vue-treeselect__count').text()).toEqual('(2)')
+      expect(findOptionByNodeId(wrapper, 'b').find('.vue-treeselect__count').text()).toEqual('(1)')
+    })
   })
 
   describe('showCountOnSearch', () => {
@@ -2162,15 +2286,113 @@ describe('Props', () => {
     })
 
     it('should refresh count number after search changes', async () => {
-      wrapper.setProps({ showCountOnSearch: true })
+      await setProps(wrapper, { showCountOnSearch: true })
 
       await typeSearchText(wrapper, 'a')
-      expect(findOptionByNodeId(wrapper, 'a').find('.vue-treeselect__count').text()).toEqual('(2)')
-      expect(findOptionByNodeId(wrapper, 'b').find('.vue-treeselect__count').text()).toEqual('(1)')
+      expect(findOptionByNodeId(wrapper, 'a').find('.vue-treeselect__count').text()).toEqual('(2 found)')
+      expect(findOptionByNodeId(wrapper, 'b').find('.vue-treeselect__count').text()).toEqual('(1 found)')
 
       await typeSearchText(wrapper, 'b')
-      expect(findOptionByNodeId(wrapper, 'a').find('.vue-treeselect__count').text()).toEqual('(1)')
-      expect(findOptionByNodeId(wrapper, 'b').find('.vue-treeselect__count').text()).toEqual('(2)')
+      expect(findOptionByNodeId(wrapper, 'a').find('.vue-treeselect__count').text()).toEqual('(1 found)')
+      expect(findOptionByNodeId(wrapper, 'b').find('.vue-treeselect__count').text()).toEqual('(2 found)')
+    })
+  })
+
+  describe('showSelectedChildrenCount', () => {
+    let wrapper
+
+    beforeEach(async () => {
+      wrapper = mount(Treeselect, {
+        propsData: {
+          alwaysOpen: true,
+          multiple: true,
+          valueConsistsOf: 'ALL',
+          options: [ {
+            id: 'a',
+            label: 'a',
+            children: [ {
+              id: 'aa',
+              label: 'aa',
+            }, {
+              id: 'ab',
+              label: 'ab',
+            } ],
+          }, {
+            id: 'b',
+            label: 'b',
+            children: [ {
+              id: 'ba',
+              label: 'ba',
+            }, {
+              id: 'bb',
+              label: 'bb',
+            } ],
+          }, {
+            id: 'c',
+            label: 'c',
+            children: [ {
+              id: 'ca',
+              label: 'ca',
+            }, {
+              id: 'cb',
+              label: 'cb',
+            } ],
+          } ],
+          value: [ 'a', 'aa', 'ab', 'ba' ],
+        },
+      })
+
+      await wrapper.vm.$nextTick()
+    })
+
+    it('when showSelectedChildrenCount=false', async () => {
+      await setProps(wrapper, { showSelectedChildrenCount: false })
+
+      expect(findOptionByNodeId(wrapper, 'a').find('.vue-treeselect__count').exists()).toBeFalse()
+      expect(findOptionByNodeId(wrapper, 'b').find('.vue-treeselect__count').exists()).toBeFalse()
+      expect(findOptionByNodeId(wrapper, 'c').find('.vue-treeselect__count').exists()).toBeFalse()
+    })
+
+    it('when showSelectedChildrenCount not specified', () => {
+      expect(findOptionByNodeId(wrapper, 'a').find('.vue-treeselect__count').exists()).toBeFalse()
+      expect(findOptionByNodeId(wrapper, 'b').find('.vue-treeselect__count').exists()).toBeFalse()
+      expect(findOptionByNodeId(wrapper, 'c').find('.vue-treeselect__count').exists()).toBeFalse()
+    })
+
+    it('when showSelectedChildrenCount=true', async () => {
+      await setProps(wrapper, { showSelectedChildrenCount: true })
+
+      expect(findOptionByNodeId(wrapper, 'a').find('.vue-treeselect__count').text()).toEqual('(2/2 selected)')
+      expect(findOptionByNodeId(wrapper, 'b').find('.vue-treeselect__count').text()).toEqual('(1/2 selected)')
+      expect(findOptionByNodeId(wrapper, 'c').find('.vue-treeselect__count').text()).toEqual('(2)')
+    })
+
+    it('when showSelectedChildrenCount=true and showCount=true', async () => {
+      await setProps(wrapper, { showSelectedChildrenCount: true, showCount: true })
+
+      expect(findOptionByNodeId(wrapper, 'a').find('.vue-treeselect__count').text()).toEqual('(2/2 selected)')
+      expect(findOptionByNodeId(wrapper, 'b').find('.vue-treeselect__count').text()).toEqual('(1/2 selected)')
+      expect(findOptionByNodeId(wrapper, 'c').find('.vue-treeselect__count').text()).toEqual('(2)')
+    })
+
+    it('when showSelectedChildrenCount=true during search', async () => {
+      await setProps(wrapper, { showSelectedChildrenCount: true, searchable: true })
+
+      await typeSearchText(wrapper, 'a')
+
+      expect(findOptionByNodeId(wrapper, 'a').find('.vue-treeselect__count').exists()).toBeFalse()
+      expect(findOptionByNodeId(wrapper, 'b').find('.vue-treeselect__count').exists()).toBeFalse()
+      expect(findOptionByNodeId(wrapper, 'c').find('.vue-treeselect__count').exists()).toBeFalse()
+    })
+
+    it('when showSelectedChildrenCount=true and showCount=true during search', async () => {
+      await setProps(wrapper, { showSelectedChildrenCount: true, showCount: true, searchable: true })
+
+      await typeSearchText(wrapper, 'a')
+
+      expect(findOptionByNodeId(wrapper, 'a').find('.vue-treeselect__count').text()).toEqual('(2 found)')
+      expect(findOptionByNodeId(wrapper, 'b').find('.vue-treeselect__count').text()).toEqual('(1 found)')
+      expect(findOptionByNodeId(wrapper, 'c').find('.vue-treeselect__count').text()).toEqual('(1 found)')
     })
   })
 
@@ -3025,17 +3247,14 @@ describe('Props', () => {
       },
       attachToDocument: true,
     })
-    const { vm } = wrapper
 
-    vm.openMenu()
-    await vm.$nextTick()
+    await openMenu(wrapper.vm)
 
     const menuContainer = findMenuContainer(wrapper)
 
     expect(menuContainer.element.style.zIndex).toBe('1')
 
-    wrapper.setProps({ zIndex: 2 })
-    await vm.$nextTick()
+    await setProps(wrapper, { zIndex: 2 })
 
     expect(menuContainer.element.style.zIndex).toBe('2')
   })
