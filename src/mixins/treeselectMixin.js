@@ -1887,13 +1887,17 @@ export default {
             this.addValue(descendant)
           }
         })
+
+        node.isExpanded = false
       }
 
       if (isFullyChecked) {
         let curr = node
         while ((curr = curr.parentNode) !== NO_PARENT_NODE) {
-          if (curr.children.every(this.isSelected)) this.addValue(curr)
-          else break
+          if (curr.children.every(this.isSelected)) {
+            curr.isExpanded = false
+            this.addValue(curr)
+          } else break
         }
       }
     },

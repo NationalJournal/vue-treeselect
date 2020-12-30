@@ -12,6 +12,7 @@
 - Added `aria-label` prop to input.
 - Added `exclusive` prop to force one branch expanded at a time.
 - Added `showSelectedChildrenCount` prop to display count of selected items under a branch node
+- Automatically collapse branch node if it's selected.
 
 ### Features
 

@@ -1195,11 +1195,16 @@ describe('Props', () => {
       })
 
       it('click on label of a branch node should not toggle expanding state when multiple=true', async () => {
-        wrapper.setProps({ multiple: true })
+        await setProps(wrapper, { multiple: true })
 
+        expect(vm.isSelected(vm.forest.nodeMap.branch)).toBe(false)
         expect(vm.forest.nodeMap.branch.isExpanded).toBe(true)
         await clickOnLabelOfBranchNode()
-        expect(vm.forest.nodeMap.branch.isExpanded).toBe(true)
+        expect(vm.isSelected(vm.forest.nodeMap.branch)).toBe(true)
+        expect(vm.forest.nodeMap.branch.isExpanded).toBe(false)
+        await clickOnLabelOfBranchNode()
+        expect(vm.isSelected(vm.forest.nodeMap.branch)).toBe(false)
+        expect(vm.forest.nodeMap.branch.isExpanded).toBe(false)
       })
 
       it('click on label of a branch node should close the dropdown when multiple=false & closeOnSelect=true', async () => {

@@ -32,7 +32,7 @@
     "lint": "npm run lint:js && npm run lint:css",
     "verify-builds": "size-limit && node build/verify-builds.js",
     "postinstall": "cd ./node_modules/@nationaljournal/vue-treeselect && npm install && npm run finish",
-    "finish": "npm test && npm run build-library && npm run verify-builds"
+    "finish": "npm run lint && npm test && npm run build-library && npm run verify-builds"
   },
   "pre-commit": "lint",
   "dependencies": {
