@@ -8,6 +8,7 @@ export const CHECKED = 2
 
 // Types of count number.
 export const ALL_CHILDREN = 'ALL_CHILDREN'
+export const ALL_CHILDREN_SELECTED = 'ALL_CHILDREN_SELECTED'
 export const ALL_DESCENDANTS = 'ALL_DESCENDANTS'
 export const LEAF_CHILDREN = 'LEAF_CHILDREN'
 export const LEAF_DESCENDANTS = 'LEAF_DESCENDANTS'

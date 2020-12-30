@@ -158,17 +158,17 @@
 
       renderLabel() {
         const { instance, node } = this
-        const shouldShowCount = (
-          node.isBranch && (instance.localSearch.active
-            ? instance.showCountOnSearchComputed
-            : instance.showCount
-          )
-        )
+        const isSearchActive = instance.localSearch.active
+        const isBranch = node.isBranch
+        const shouldShowCount = isBranch && (isSearchActive ? instance.showCountOnSearchComputed : instance.showCount)
         const count = shouldShowCount
-          ? instance.localSearch.active
+          ? (instance.localSearch.active
             ? instance.localSearch.countMap[node.id][instance.showCountOf]
-            : node.count[instance.showCountOf]
+            : node.count[instance.showCountOf])
           : NaN
+        const shouldShowSelectedCount = isBranch && !isSearchActive && instance.showSelectedChildrenCount
+        const totalCount = node.count != null ? node.count.ALL_CHILDREN : '-'
+        const selectedCount = node.count != null ? node.count.ALL_CHILDREN_SELECTED : '-'
         const labelClassName = 'vue-treeselect__label'
         const countClassName = 'vue-treeselect__count'
         const customLabelRenderer = instance.$scopedSlots['option-label']
@@ -184,8 +184,11 @@
         return (
           <label class={labelClassName}>
             {node.label}
-            {shouldShowCount && (
-              <span class={countClassName}>({count})</span>
+            {((shouldShowCount && !shouldShowSelectedCount) || (shouldShowSelectedCount && selectedCount === 0)) && (
+              <span class={countClassName}>({!isNaN(count) ? count : totalCount}{isSearchActive ? ' found' : ''})</span>
+            )}
+            {shouldShowSelectedCount && selectedCount !== 0 && (
+              <span class={countClassName}> ({selectedCount}/{totalCount} selected)</span>
             )}
           </label>
         )

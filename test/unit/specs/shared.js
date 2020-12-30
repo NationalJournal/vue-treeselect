@@ -159,3 +159,13 @@ export function findChildrenOptionListByNodeId(wrapper, nodeId) {
     .find(optionWrapper => optionWrapper.vm.node.id === nodeId)
     .find('.vue-treeselect__list')
 }
+
+export async function setProps(wrapper, props) {
+  wrapper.setProps(props)
+  await wrapper.vm.$nextTick()
+}
+
+export async function openMenu(vm) {
+  vm.openMenu()
+  await vm.$nextTick()
+}

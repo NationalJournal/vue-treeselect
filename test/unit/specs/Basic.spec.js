@@ -50,6 +50,7 @@ describe('Basic', () => {
         isMatched: jasmine.any(Boolean),
         isHighlighted: jasmine.any(Boolean),
         isDisabled: jasmine.any(Boolean),
+        isSelected: jasmine.any(Boolean),
         isNew: jasmine.any(Boolean),
         parentNode: jasmine.any(Object),
         ancestors: jasmine.any(Array),
@@ -73,6 +74,7 @@ describe('Basic', () => {
         children: jasmine.any(Array),
         count: {
           ALL_CHILDREN: jasmine.any(Number),
+          ALL_CHILDREN_SELECTED: jasmine.any(Number),
           ALL_DESCENDANTS: jasmine.any(Number),
           LEAF_CHILDREN: jasmine.any(Number),
           LEAF_DESCENDANTS: jasmine.any(Number),
@@ -463,6 +465,7 @@ describe('Basic', () => {
 
       expect(a.count).toEqual({
         ALL_CHILDREN: 2,
+        ALL_CHILDREN_SELECTED: 0,
         ALL_DESCENDANTS: 4,
         LEAF_CHILDREN: 1,
         LEAF_DESCENDANTS: 3,
@@ -472,6 +475,7 @@ describe('Basic', () => {
 
       expect(aa.count).toEqual({
         ALL_CHILDREN: 2,
+        ALL_CHILDREN_SELECTED: 0,
         ALL_DESCENDANTS: 2,
         LEAF_CHILDREN: 2,
         LEAF_DESCENDANTS: 2,
@@ -729,7 +733,7 @@ describe('Basic', () => {
     expect(vm.forest.nodeMap.a).not.toHaveMember('isFallbackNode')
   })
 
-  it('should rebuild state after swithching from single to multiple', () => {
+  it('should rebuild state after switching from single to multiple', () => {
     const wrapper = mount(Treeselect, {
       propsData: {
         options: [ {
