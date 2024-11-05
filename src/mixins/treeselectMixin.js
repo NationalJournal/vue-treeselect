@@ -306,6 +306,14 @@ export default {
     },
 
     /**
+     * Prevent top level branch nodes from being selected?
+     */
+    disableTopLevelBranchNodes: {
+      type: Boolean,
+      default: false,
+    },
+
+    /**
      * Disable the control?
      */
     disabled: {
