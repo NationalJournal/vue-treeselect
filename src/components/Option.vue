@@ -122,6 +122,7 @@
 
         if (instance.single) return null
         if (instance.disableBranchNodes && node.isBranch) return null
+        if (instance.disableTopLevelBranchNodes && node.isRootNode && node.isBranch) return null
 
         return (
           <div class="vue-treeselect__checkbox-container">
@@ -258,7 +259,7 @@
       handleMouseDownOnLabelContainer: onLeftClick(function handleMouseDownOnLabelContainer() {
         const { instance, node } = this
 
-        if (node.isBranch && instance.disableBranchNodes) {
+        if ((node.isBranch && instance.disableBranchNodes) || (node.isRootNode && node.isBranch && instance.disableTopLevelBranchNodes)) {
           instance.toggleExpanded(node)
         } else {
           instance.select(node)
