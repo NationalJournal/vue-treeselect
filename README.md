@@ -158,7 +158,9 @@ You can use this [pen](https://codepen.io/riophae/pen/MExgzP) to reproduce bugs 
 3. Check out a new branch
 4. `npm run dev` & hack
 5. Make sure `npm test` passes
-6. Push your changes & file a pull request
+6. run `npm version` to bump the version number
+7. Push your changes & file a pull request
+8. Manually run Publish to NPM github action if necessary (it should be triggered automatically)
 
 ### Credits
 
