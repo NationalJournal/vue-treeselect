@@ -26,7 +26,8 @@ jobs:
       - name: Build artifacts to publish
         run: npm run build-library
 
+      - name: Authenticate with NPM
+        run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc && cat ~/.npmrc
+
       - name: Publish to npm
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: npm publish
