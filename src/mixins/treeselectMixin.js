@@ -15,7 +15,7 @@ import {
   ALL, BRANCH_PRIORITY, LEAF_PRIORITY, ALL_WITH_INDETERMINATE,
   ALL_CHILDREN, ALL_DESCENDANTS, LEAF_CHILDREN, LEAF_DESCENDANTS,
   ORDER_SELECTED, LEVEL, INDEX,
-  ALL_CHILDREN_SELECTED,
+  ALL_CHILDREN_SELECTED, ALL_DESCENDANTS_SELECTED,
 } from '../constants'
 
 function sortValueByIndex(a, b) {
@@ -306,6 +306,14 @@ export default {
     },
 
     /**
+     * Prevent top level branch nodes from being selected?
+     */
+    disableTopLevelBranchNodes: {
+      type: Boolean,
+      default: false,
+    },
+
+    /**
      * Disable the control?
      */
     disabled: {
@@ -573,7 +581,7 @@ export default {
       type: String,
       default: ALL_CHILDREN,
       validator(value) {
-        const acceptableValues = [ ALL_CHILDREN, ALL_CHILDREN_SELECTED, ALL_DESCENDANTS, LEAF_CHILDREN, LEAF_DESCENDANTS ]
+        const acceptableValues = [ ALL_CHILDREN, ALL_CHILDREN_SELECTED, ALL_DESCENDANTS, ALL_DESCENDANTS_SELECTED, LEAF_CHILDREN, LEAF_DESCENDANTS ]
         return includes(acceptableValues, value)
       },
     },
@@ -1244,6 +1252,7 @@ export default {
             [ALL_CHILDREN]: 0,
             [ALL_CHILDREN_SELECTED]: 0,
             [ALL_DESCENDANTS]: 0,
+            [ALL_DESCENDANTS_SELECTED]: 0,
             [LEAF_CHILDREN]: 0,
             [LEAF_DESCENDANTS]: 0,
           })
@@ -1519,6 +1528,14 @@ export default {
     },
 
     buildForestState() {
+      // Reset counts before recounting
+      this.traverseAllNodesByIndex(node => {
+        if (node.count != null) {
+          this.$set(node.count, ALL_CHILDREN_SELECTED, 0)
+          this.$set(node.count, ALL_DESCENDANTS_SELECTED, 0)
+        }
+      })
+
       const selectedNodeMap = createMap()
       this.forest.selectedNodeIds.forEach(selectedNodeId => {
         selectedNodeMap[selectedNodeId] = true
@@ -1528,20 +1545,31 @@ export default {
       const checkedStateMap = createMap()
       if (this.multiple) {
         this.traverseAllNodesByIndex(node => {
-          checkedStateMap[node.id] = UNCHECKED
-          if (node.count != null) {
-            node.count.ALL_CHILDREN_SELECTED = 0
-          }
+          this.$set(checkedStateMap, node.id, UNCHECKED)
         })
 
         this.selectedNodes.forEach(selectedNode => {
-          checkedStateMap[selectedNode.id] = CHECKED
+          this.$set(checkedStateMap, selectedNode.id, CHECKED)
 
           if (!this.flat && !this.disableBranchNodes) {
-            selectedNode.ancestors.forEach(ancestorNode => {
-              ancestorNode.count.ALL_CHILDREN_SELECTED++
+            selectedNode.ancestors.forEach((ancestorNode, index) => {
+              if (index === 0) {
+                // Immediate parent: Increment ALL_CHILDREN_SELECTED
+                this.$set(
+                  ancestorNode.count,
+                  ALL_CHILDREN_SELECTED,
+                  ancestorNode.count.ALL_CHILDREN_SELECTED + 1,
+                )
+              }
+              // All ancestors: Increment ALL_DESCENDANTS_SELECTED
+              this.$set(
+                ancestorNode.count,
+                ALL_DESCENDANTS_SELECTED,
+                ancestorNode.count.ALL_DESCENDANTS_SELECTED + 1,
+              )
+
               if (!this.isSelected(ancestorNode)) {
-                checkedStateMap[ancestorNode.id] = INDETERMINATE
+                this.$set(checkedStateMap, ancestorNode.id, INDETERMINATE)
               }
             })
           }
@@ -1615,8 +1643,9 @@ export default {
             this.$set(normalized, 'showAllChildrenOnSearch', false)
             this.$set(normalized, 'count', {
               [ALL_CHILDREN]: 0,
-              [ALL_CHILDREN_SELECTED]: 0,
-              [ALL_DESCENDANTS]: 0,
+              [ALL_CHILDREN_SELECTED]: 0, // Immediate children selected
+              [ALL_DESCENDANTS]: 0, // Total descendants
+              [ALL_DESCENDANTS_SELECTED]: 0, // Total descendants selected
               [LEAF_CHILDREN]: 0,
               [LEAF_DESCENDANTS]: 0,
             })
