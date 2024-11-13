@@ -9,6 +9,7 @@ on:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    environment: "NJ Custom Environment" # connect this workflow with the created environment where the NPM TOKEN secret is stored
 
     steps:
       - name: Checkout code
