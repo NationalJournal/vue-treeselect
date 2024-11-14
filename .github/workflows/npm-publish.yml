@@ -28,7 +28,7 @@ jobs:
         run: npm run build-library
 
       - name: Authenticate with NPM
-        run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
+        run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc && npm login
 
       - name: Publish to npm
         run: npm publish --access public
