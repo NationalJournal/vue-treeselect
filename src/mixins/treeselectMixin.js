@@ -341,6 +341,14 @@ export default {
     },
 
     /**
+     * Whether to ignore the flat mode fixing of selected nodes.
+     */
+    ignoreFlatModeFixing: {
+      type: Boolean,
+      default: false,
+    },
+
+    /**
      * Will be passed with all events as the last param.
      * Useful for identifying events origin.
     */
@@ -1067,7 +1075,7 @@ export default {
       let nextSelectedNodeIds = []
 
       // istanbul ignore else
-      if (this.single || this.flat || this.disableBranchNodes || this.valueConsistsOf === ALL) {
+      if (this.single || (this.flat && !this.ignoreFlatModeFixing) || this.disableBranchNodes || this.valueConsistsOf === ALL) {
         nextSelectedNodeIds = nodeIdListOfPrevValue
       } else if (this.valueConsistsOf === BRANCH_PRIORITY) {
         nodeIdListOfPrevValue.forEach(nodeId => {
@@ -1571,6 +1579,14 @@ export default {
               if (!this.isSelected(ancestorNode)) {
                 this.$set(checkedStateMap, ancestorNode.id, INDETERMINATE)
               }
+            })
+          } else if (this.flat && !this.disableBranchNodes) {
+            selectedNode.ancestors.forEach(ancestorNode => {
+              this.$set(
+                ancestorNode.count,
+                ALL_DESCENDANTS_SELECTED,
+                ancestorNode.count.ALL_DESCENDANTS_SELECTED + 1,
+              )
             })
           }
         })
