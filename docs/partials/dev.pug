@@ -20,3 +20,18 @@ if NODE_ENV !== 'production'
 
   +subsection('Long Label Test')
     +component('LongLabelTest')
+
+  +subsection('Nj Testing Playground')
+    :markdown-it
+      This is a playground for testing changes that were made in order to better support the nj-cms repository.
+      Please note that this will not test the specific logic around the url shortening functionality as that is
+      specific to the nj-cms repository.
+      The current testing scenarios are:
+      - Being able to select non-top level branch nodes as routeable values (**Test 1**)
+      - Non-top level branch nodes are a value on their own for searches. (**Test 2**)
+          - The behvaior should be that selecting a branch node selects all of its children but de-selecting any or all 
+            of the children will not deselect the branch node. For example, selecting "AB" will select all of its descendants
+            but de-selecting any or all descendants of "AB" will not deselect "AB".
+
+      You can select these scenarios below to put the component in the desired state and then manually test the component.
+    +demo('NjTestingPlayground')
